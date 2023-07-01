@@ -1,0 +1,239 @@
+﻿@model TABproject_MVC_C.model.DBcontext.City
+
+@{
+    ViewBag.Title = "Index";
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial;
+        }
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+            .tab button {
+                background-color: inherit;
+                float: left;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                padding: 14px 16px;
+                transition: 0.3s;
+                font-size: 17px;
+            }
+                .tab button:hover {
+                    background-color: #ddd;
+                }
+
+                .tab button.active {
+                    background-color: #ccc;
+                }
+    </style>
+</head>
+<body>
+
+    <br />
+    <br />
+
+    <div class="tab">
+        <button class="tablinks" onclick="openCity(event, 'London')">Country</button>
+        <button class="tablinks" onclick="openCity(event, 'Paris')">State</button>
+        <button class="tablinks" onclick="openCity(event, 'Tokyo')">City</button>
+    </div>
+
+    <div id="London" class="tabcontent">
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.CountryId, ViewBag.countryList as SelectList, "--select country--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CountryId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <br />
+    <div id="Paris" class="tabcontent">
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.CountryId, ViewBag.countryList as SelectList, "--select country--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CountryId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <br />
+        <br />
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.StateId, ViewBag.State as SelectList, "--select state--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.StateId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    </div>
+    <br />
+    <div id="Tokyo" class="tabcontent">
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.CountryId, ViewBag.countryList as SelectList, "--select country--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CountryId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <br />
+        <br />
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.StateId, ViewBag.State as SelectList, "--select state--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.StateId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <br />
+        <br />
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.Cityid, new SelectList(" "), "--Select City--", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Cityid, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <input type="button" class="btn-success" id="submitId" value="Submit" />
+        <input type="button" class="btn-success" id="UpdateId" value="Update" />
+    </div>
+
+    <script>
+        function openCity(evt, cityName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        $(document).ready(function () {
+            $("#submitId").show();
+            $("#UpdateId").hide();
+            $("#CountryId").change(function () {
+                $.get("/CountryStateCity/stateList", { CountryId: $("#CountryId").val() }, function (data) {
+                    $("#StateId").empty();
+                    console.log(data);
+                    $.each(data, function (index, row) {
+                        $("#StateId").append("<option value='" + row.StateId + "'>" + row.StateName + "</option>")
+                    })
+                })
+            })
+
+            $("#StateId").change(function () {
+                $.get("/CountryStateCity/cityList", { StateId: $("#StateId").val() }, function (data) {
+                    $("#Cityid").empty();
+                    console.log("hii");
+                    $.each(data, function (index, row) {
+                        $("#CityId").append("<option value='" + row.Cityid + "'>" + row.CityName + "</option>")
+                    })
+                })
+            })
+            tableForm();
+        })
+    </script>
+
+    <table class="table" id="tableId">
+        <thead>
+            <tr>
+                <th>Country Name</th>
+                <th>state Name</th>
+                <th>city Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <script>
+        $("#submitId").click(function () {
+            var dataform = {
+                CountryId: $("#CountryId").val(),
+                StateId: $("#StateId").val(),
+                Cityid: $("#Cityid").val(),
+            }
+            console.log(dataform);
+            $.ajax({
+                url: "/CountryStateCity/AddResult",
+                type: 'post',
+                data: dataform,
+                dataType: 'json',
+                success: function (response) {
+                    if (response) {
+                        alert("User created SuccessFully!!!");
+                    } else {
+                        alert("User getting error, while created user!!!");
+                        $(".field-validation-error").show();
+                    }
+                }
+            })
+        })
+        function tableForm() {
+            $.ajax({
+                url: "/CountryStateCity/ListAll",
+                type: "get",
+                dataType: "JSON",
+                success: function (data) {
+                    $("#tableId tbody").empty();
+                    $.each(data, function (index, x) {
+                        var tableRow = `<tr>
+                                     <td> ${x.CountryName}  </td>
+                                     <td> ${x.StateName}</td>
+                                     <td> ${x.CityName}</td>
+                                     <td>
+                                        <button class="std-edit btn-primary" onclick="editStudent(${x.CityId})">Edit</button>
+                                        <button class="btn-danger std-delete" onclick="deleteStd(${x.Cityid})" > Delete</button>
+                                     </td>
+                                </tr>`
+                        $('#tableId tbody').append(tableRow);
+                    })
+                }
+            })
+        }
+
+        function editStudent(id) {
+            $("#submitId").hide();
+            $("#UpdateId").show();
+            console.log(id);
+            $.ajax({
+                url: "/CountryStateCity/AddResult/" + id,
+                type: "get",
+                dataType: 'JSON',
+                success: function (response) {
+                    console.log(response);
+                    $("#CountryId").val(response.CountryId);
+                    $("#StateId").val(response.StateId);
+                }
+            });
+            $("#UpdateId").click(function () {
+                $.ajax({
+                    url: "/CountryStateCity/AddResult/" + id,
+                    type: "post",
+                    data: $("#FormId").serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response) {
+                            alert("Form updated successFully!!!");
+                        } else {
+                            alert("getting error while updating form!!");
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+</body>
+</html>
